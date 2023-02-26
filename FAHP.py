@@ -1,71 +1,195 @@
 import streamlit as st
-import pandas as pd 
-import numpy as np 
-import openpyxl
-import csv
-import math
+import pandas as pd
+import numpy as np
+from fahp import FAHP
 
-#Fungsi untuk membaca file dan menyimpan dalam bentuk array / tuple 
+# Fungsi untuk membaca file dan menyimpan dalam bentuk array / tuple
 def read_excel_file(filename, n):
     df = pd.read_excel(filename)
     items = np.array(df.iloc[:, 0].tolist()) if n == 0 else tuple(zip(df.iloc[:, 0].tolist(), df.iloc[:, n].tolist()))
     return items
 
-def compare(*items):
+# Fungsi untuk membandingkan dua item
+def compare(c_i, v_i, c_j, v_j):
+    if c_i == c_j or v_i == v_j:
+        return [1, 1, 3]
+    else:
+        diff = abs(v_i - v_j)
+        if diff == 1:
+            return [1, 3, 5]
+        elif diff == 2:
+            return [3, 5, 7]
+        elif diff == 3:
+            return [5, 7, 9]
+        elif diff >= 4:
+            return [7, 9, 9]
+    return None
+
+# Fungsi untuk membandingkan beberapa item
+def compare_items(items):
     n = len(items)
     matrix = np.zeros((n, n, 3))
     for i, (c_i, v_i) in enumerate(items):
         for j, (c_j, v_j) in enumerate(items):
-            if c_i == c_j or v_i == v_j:
-                matrix[i][j] = [1, 1, 3]
-            else:
-                diff = abs(v_i - v_j)
-                if diff == 1:
-                    matrix[i][j] = [1, 3, 5]
-                elif diff == 2:
-                    matrix[i][j] = [3, 5, 7]
-                elif diff == 3:
-                    matrix[i][j] = [5, 7, 9]
-                elif diff >= 4:
-                    matrix[i][j] = [7, 9, 9]
-                if v_i < v_j:
-                    matrix[i][j] = 1 / matrix[i][j][::-1]
+            if i != j:
+                comp = compare(c_i, v_i, c_j, v_j)
+                if comp is not None:
+                    matrix[i][j] = comp
+                    matrix[j][i] = [1/x for x in comp[::-1]]
     return matrix
 
-def main():
-    st.title("Aplikasi FAHP")
+# Fungsi untuk membandingkan kriteria
+def compare_criteria(criteria):
+    return compare_items(criteria)
 
-    st.sidebar.header("Pilih file data")
-    criteria_file = st.sidebar.file_uploader("Upload file kriteria", type=["xlsx"])
-    alternatives_file = st.sidebar.file_uploader("Upload file alternatif", type=["xlsx"])
+# Fungsi untuk membandingkan alternatif terhadap kriteria
+def compare_alt_criteria(alt):
+    return compare_items(alt)
+
+# Membaca data dari file excel
+criteriaDict = read_excel_file('NilaiKriteria.xlsx', 0)
+criteria = read_excel_file('NilaiKriteria.xlsx', 1)
+alternativesName = read_excel_file('NilaiAlternatif.xlsx', 0)
+alternatives = [read_excel_file('NilaiAlternatif.xlsx', i+1) for i in range(len(criteriaDict))]
+
+# Membandingkan kriteria
+crxcr = compare_criteria(criteria)
+
+def isConsistent(matrix, printComp=True):
+    mat_len = len(matrix)
+
+    midMatrix = np.array([m[1] for row in matrix for m in row]).reshape(mat_len, mat_len)
+    if(printComp): print("mid-value matrix: \n", midMatrix, "\n")
     
-    if criteria_file and alternatives_file:
-        criteriaDict = read_excel_file(criteria_file, 0)
-        alternativesName = read_excel_file(alternatives_file, 0)
+    eigenvalue = np.linalg.eigvals(midMatrix)
+    lambdaMax = max(eigenvalue)
+    if(printComp): print("eigenvalue: ", eigenvalue)
+    if(printComp): print("lambdaMax: ", lambdaMax)
+    if(printComp): print("\n")
 
-        criteria = read_excel_file(criteria_file, 1)
-        for i in range(1, 14):
-            exec(f"altc{i} = read_excel_file(alternatives_file, {i})")
+    RIValue = 0.1*(mat_len-1)/mat_len + 0.9
+    if(printComp): print("R.I. Value: ", RIValue)
 
-        crxcr = np.array(compare(*criteria))
-        for i in range(1, 14):
-            alt = eval(f"altc{i}")
-            cr = compare(*alt)
-            exec(f"altxalt_cr{i} = np.array(cr)")
+    CIValue = (lambdaMax-mat_len)/(mat_len - 1)
+    if(printComp): print("C.I. Value: ", CIValue)
 
-        st.header("Data Kriteria")
-        st.write(criteriaDict)
+    CRValue = CIValue/RIValue
+    if(printComp): print("C.R. Value: ", CRValue)
 
-        st.header("Data Alternatif")
-        st.write(alternativesName)
+    if(printComp): print("\n")
+    if(CRValue<=0.1):
+        if(printComp): print("Matrix reasonably consistent, we could continue")
+        return True
+    else:
+        if(printComp): print("Consistency Ratio is greater than 10%, we need to revise the subjective judgment")
+        return False
 
-        st.header("Matriks Perbandingan Kriteria")
-        st.write(crxcr)
+#Parameter: matrix = Matrix yang akan dihitung konsistensinya, printComp = opsi untuk menampilkan komputasi konsistensi matrix
+def pairwiseComp(matrix, printComp=True):
+    matrix_len = len(matrix)
 
-        for i in range(1, 14):
-            st.header(f"Matriks Perbandingan Alternatif-{i}")
-            alt_cr = eval(f"altxalt_cr{i}")
-            st.write(alt_cr)
+    #menghitung fuzzy geometric mean value
+    geoMean = np.zeros((matrix_len,3))
 
-if __name__ == "__main__":
-    main()
+    for i in range(matrix_len):
+        for j in range(3):
+            temp = 1
+            for tfn in matrix[i]:
+                temp *= tfn[j]
+            temp = pow(temp, 1/matrix_len)
+            geoMean[i,j] = temp
+
+    if(printComp): 
+        print("Fuzzy Geometric Mean Value: \n", geoMean, "\n")
+
+    #menghitung total fuzzy geometric mean value
+    geoMean_sum = np.sum(geoMean, axis=0)
+
+    if(printComp): 
+        print("Fuzzy Geometric Mean Sum:", geoMean_sum, "\n")
+
+    #menghitung weights
+    weights = np.zeros(matrix_len)
+
+    for i in range(matrix_len):
+        weights[i] = np.sum(geoMean[i] / geoMean_sum)
+
+    if(printComp): 
+        print("Weights: \n", weights, "\n")
+
+    #menghitung normalized weights
+    normWeights = weights / np.sum(weights)
+
+    if(printComp): 
+        print("Normalized Weights: ", normWeights,"\n")
+
+    return normWeights
+
+#Parameter: crxcr = Pairwise comparison matrix criteria X criteria, altxalt = Pairwise comparison matrices alternatif X alternatif , 
+#       alternativesName = Nama dari setiap alternatif, printComp = opsi untuk menampilkan komputasi konsistensi matrix
+def FAHP(crxcr, altxalt, alternativesName, printComp=True):
+    
+
+    # Cek konsistensi pairwise comparison matrix criteria x criteria
+    crxcr_cons = isConsistent(crxcr, False)
+    if(crxcr_cons):
+        if(printComp): print("criteria X criteria comparison matrix reasonably consistent, we could continue")
+    else: 
+        if(printComp): print("criteria X criteria comparison matrix consistency ratio is greater than 10%, we need to revise the subjective judgment")
+
+    # Cek konsistensi pairwise comparison matrix alternative x alternative untuk setiap criteria
+    for i, altxalt_cr in enumerate(altxalt):
+        isConsistent(altxalt_cr, False)
+        if(crxcr_cons):
+            if(printComp): print("alternatives X alternatives comparison matrix for criteria",i+1," is reasonably consistent, we could continue")
+        else: 
+            if(printComp): print("alternatives X alternatives comparison matrix for criteria",i+1,"'s consistency ratio is greater than 10%, we need to revise the subjective judgment")
+
+    if(printComp): print("\n")
+
+    if(printComp): print("criteria X criteria ======================================================\n")
+    # Hitung nilai pairwise comparison weight untuk criteria x criteria
+    crxcr_weights = pairwiseComp(crxcr, printComp)
+    if(printComp): print("criteria X criteria weights: ", crxcr_weights)
+
+    if(printComp): print("\n")
+    if(printComp): print("alternative x alternative ======================================================\n")
+
+    # Hitung nilai pairwise comparison weight untuk setiap alternative x alternative dalam setiap criteria
+    altxalt_weights = np.zeros((len(altxalt),len(altxalt[0])))
+    for i, altxalt_cr in enumerate(altxalt):
+        if(printComp): print("alternative x alternative for criteria", criteriaDict[i],"---------------\n")
+        altxalt_weights[i] =  pairwiseComp(altxalt_cr, printComp)
+
+    # Transpose matrix altxalt_weights
+    altxalt_weights = altxalt_weights.transpose(1, 0)
+    if(printComp): print("alternative x alternative weights:")
+    if(printComp): print(altxalt_weights)
+
+    # Hitung nilai jumlah dari perkalian crxcr_weights dengan altxalt_weights pada setiap kolom
+    sumProduct = np.zeros(len(altxalt[0]))
+    for i  in range(len(altxalt[0])):
+        sumProduct[i] = np.dot(crxcr_weights, altxalt_weights[i])
+
+    # Buat output dataframe
+    output_df = pd.DataFrame(data=[alternativesName, sumProduct]).T
+    output_df = output_df.rename(columns={0: "Alternatif", 1: "Score"})
+    output_df = output_df.sort_values(by=['Score'],ascending = False)
+    output_df.index = np.arange(1,len(output_df)+1)
+
+    # Simpan DataFrame ke dalam file CSV
+    output_df.to_csv("\n output_fahp.csv", index=False)
+
+    print("\n Output telah disimpan dalam file 'output_fahp.csv'")
+
+    return output_df
+
+# Membandingkan alternatif terhadap kriteria
+altxalt_cr = [compare_alt_criteria(alt) for alt in alternatives]
+altxalt = np.stack(altxalt_cr)
+
+# Memanggil fungsi FAHP dengan parameter yang telah didefinisikan sebelumnya
+output = FAHP(crxcr, altxalt, alternativesName, False)
+
+# Menampilkan rangking alternatif dengan output dari fungsi FAHP
+st.write("RANGKING ALTERNATIF:\n", output)
