@@ -6,7 +6,9 @@ import csv
 import math
 import base64
 from io import BytesIO
+import plotly.graph_objects as go
 import streamlit as st
+
 
 st.set_page_config(layout="wide")
 
@@ -153,6 +155,17 @@ def FAHP(crxcr, altxalt, alternativesName, printComp=True):
 
     return output_df
 
+# Membuat fungsi untuk pengelompokan berdasarkan score dan batas skor yang ditentukan oleh pengguna
+def kelompokkan_score(Score):
+    if Score >= batas_keringanan_50:
+        return 'Keringanan 50%'
+    elif Score >= batas_keringanan_30:
+        return 'Keringanan 30%'
+    elif Score >= batas_keringanan_20:
+        return 'Keringanan 20%'
+    else:
+        return 'Tanpa Keringanan'
+
 st.title("Fuzzy AHP untuk Seleksi Keringanan UKT")
 
 with st.sidebar:
@@ -208,8 +221,39 @@ if file_criteria is not None and file_alternatives is not None:
     #Menampilkan rangking alternatif dengan output dari fungsi FAHP
     st.write("\n RANGKING ALTERNATIF:\n", output)
 
-    # gunakan widget download di dalam st.markdown
-    st.markdown(filedownload(output, 'output_fahp.xlsx'), unsafe_allow_html=True)
+    # tampilkan widget
+    st.header("Pengelompokan Data Berdasarkan Skor Tertinggi")
+
+    # Menambahkan widget untuk memungkinkan pengguna menentukan batas skor untuk masing-masing kelompok
+    batas_keringanan_50 = st.slider('Batas skor Keringanan 50%:', min_value=0.00, max_value=0.01, value=0.0056,step=0.0001, format="%.4f")
+    batas_keringanan_30 = st.slider('Batas skor Keringanan 30%:', min_value=0.00, max_value=0.01, value=0.0048,step=0.0001, format="%.4f")
+    batas_keringanan_20 = st.slider('Batas skor Keringanan 20%:', min_value=0.00, max_value=0.01, value=0.0035,step=0.0001, format="%.4f")
+
+    # Melakukan pengelompokan dan pengurutan dataframe
+    output['kelompok'] = output['Score'].apply(kelompokkan_score)
+    output = output.sort_values(by='Score', ascending=False)
+
+    # Menghitung presentase untuk masing-masing kelompok
+    count = output.groupby('kelompok')[output.columns[0]].count()
+    labels = count.index.tolist()
+    values = count.values.tolist()
+    total = sum(values)
+    percentages = [round(value/total*100,2) for value in values]
+
+    # Menampilkan dataframe yang sudah diurutkan dan dikelompokkan
+    st.write(output)
+
+    # Membuat diagram pie
+    fig = go.Figure(data=[go.Pie(labels=labels, values=percentages)])
+    fig.update_layout(title='Presentase Kelompok')
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown(filedownload(output), unsafe_allow_html=True)
 
 else:
-    st.write("Mohon upload kedua file terlebih dahulu.")    
+    st.write("Mohon upload kedua file terlebih dahulu.")
+
+
+
+
+
