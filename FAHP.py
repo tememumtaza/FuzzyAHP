@@ -1,61 +1,49 @@
-import streamlit as st
+#Import library yang dibutuhkan
 import pandas as pd 
 import numpy as np 
 import openpyxl
 import csv
 import math
 
-# Fungsi untuk membaca file dan menyimpan dalam bentuk array / tuple
+#Fungsi untuk membaca file dan menyimpan dalam bentuk array / tuple 
 def read_excel_file(filename, n):
     df = pd.read_excel(filename)
     items = np.array(df.iloc[:, 0].tolist()) if n == 0 else tuple(zip(df.iloc[:, 0].tolist(), df.iloc[:, n].tolist()))
     return items
 
-# Fungsi untuk membandingkan dua item
-def compare(c_i, v_i, c_j, v_j):
-    if c_i == c_j or v_i == v_j:
-        return [1, 1, 3]
-    else:
-        diff = abs(v_i - v_j)
-        if diff == 1:
-            return [1, 3, 5]
-        elif diff == 2:
-            return [3, 5, 7]
-        elif diff == 3:
-            return [5, 7, 9]
-        elif diff >= 4:
-            return [7, 9, 9]
-    return None
+criteriaDict = read_excel_file('/content/drive/MyDrive/Colab Notebooks/Data for FAHP/NilaiKriteria.xlsx', 0)
+alternativesName = read_excel_file('/content/drive/MyDrive/Colab Notebooks/Data for FAHP/NilaiAlternatif.xlsx', 0)
 
-# Fungsi untuk membandingkan beberapa item
-def compare_items(items):
+criteria = read_excel_file('/content/drive/MyDrive/Colab Notebooks/Data for FAHP/NilaiKriteria.xlsx', 1)
+for i in range(1, 14):
+    exec(f"altc{i} = read_excel_file('/content/drive/MyDrive/Colab Notebooks/Data for FAHP/NilaiAlternatif.xlsx', {i})")
+
+def compare(*items):
     n = len(items)
     matrix = np.zeros((n, n, 3))
     for i, (c_i, v_i) in enumerate(items):
         for j, (c_j, v_j) in enumerate(items):
-            if i != j:
-                comp = compare(c_i, v_i, c_j, v_j)
-                if comp is not None:
-                    matrix[i][j] = comp
-                    matrix[j][i] = [1/x for x in comp[::-1]]
+            if c_i == c_j or v_i == v_j:
+                matrix[i][j] = [1, 1, 3]
+            else:
+                diff = abs(v_i - v_j)
+                if diff == 1:
+                    matrix[i][j] = [1, 3, 5]
+                elif diff == 2:
+                    matrix[i][j] = [3, 5, 7]
+                elif diff == 3:
+                    matrix[i][j] = [5, 7, 9]
+                elif diff >= 4:
+                    matrix[i][j] = [7, 9, 9]
+                if v_i < v_j:
+                    matrix[i][j] = 1 / matrix[i][j][::-1]
     return matrix
 
-# Fungsi untuk membandingkan kriteria
-def compare_criteria(criteria):
-    return compare_items(criteria)
-
-# Fungsi untuk membandingkan alternatif terhadap kriteria
-def compare_alt_criteria(alt):
-    return compare_items(alt)
-
-# Membaca data dari file excel
-criteriaDict = read_excel_file('NilaiKriteria.xlsx', 0)
-criteria = read_excel_file('NilaiKriteria.xlsx', 1)
-alternativesName = read_excel_file('NilaiAlternatif.xlsx', 0)
-alternatives = [read_excel_file('NilaiAlternatif.xlsx', i+1) for i in range(len(criteriaDict))]
-
-# Membandingkan kriteria
-crxcr = compare_criteria(criteria)
+crxcr = np.array(compare(*criteria))
+for i in range(1, 14):
+    alt = eval(f"altc{i}")
+    cr = compare(*alt)
+    exec(f"altxalt_cr{i} = np.array(cr)")
 
 def isConsistent(matrix, printComp=True):
     mat_len = len(matrix)
@@ -185,13 +173,14 @@ def FAHP(crxcr, altxalt, alternativesName, printComp=True):
     print("\n Output telah disimpan dalam file 'output_fahp.csv'")
 
     return output_df
+    
 
-# Membandingkan alternatif terhadap kriteria
-altxalt_cr = [compare_alt_criteria(alt) for alt in alternatives]
-altxalt = np.stack(altxalt_cr)
+#Membuat array numpy untuk altxalt dengan mengambil nilai dari variabel global
+altxalt = np.stack([globals()[f"altxalt_cr{i+1}"] for i in range(len(criteriaDict))])
 
-# Memanggil fungsi FAHP dengan parameter yang telah didefinisikan sebelumnya
+#Memanggil fungsi FAHP dengan parameter yang telah didefinisikan sebelumnya
+#printComp di-set False agar tidak menampilkan komputasi konsistensi matrix
 output = FAHP(crxcr, altxalt, alternativesName, False)
 
-# Menampilkan rangking alternatif dengan output dari fungsi FAHP
-st.write("RANGKING ALTERNATIF:\n", output)
+#Menampilkan rangking alternatif dengan output dari fungsi FAHP
+print("\n RANGKING ALTERNATIF:\n", output)
