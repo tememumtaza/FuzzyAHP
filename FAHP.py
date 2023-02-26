@@ -1,9 +1,16 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-from FuzzyAHP import FuzzyAHP
+import pandas as pd 
+import numpy as np 
+import openpyxl
+import csv
+import math
 
-# Fungsi untuk membandingkan nilai
+#Fungsi untuk membaca file dan menyimpan dalam bentuk array / tuple 
+def read_excel_file(filename, n):
+    df = pd.read_excel(filename)
+    items = np.array(df.iloc[:, 0].tolist()) if n == 0 else tuple(zip(df.iloc[:, 0].tolist(), df.iloc[:, n].tolist()))
+    return items
+
 def compare(*items):
     n = len(items)
     matrix = np.zeros((n, n, 3))
@@ -25,69 +32,40 @@ def compare(*items):
                     matrix[i][j] = 1 / matrix[i][j][::-1]
     return matrix
 
-# Fungsi untuk menghitung Fuzzy AHP
-def calculate_fuzzy_ahp(criteria_df, alternatives_df):
-    # Hitung nilai bobot kriteria dengan Fuzzy AHP
-    ahp = FuzzyAHP(criteria_df, compare)
-    ahp.calculate_weights()
-    criteria_weights = ahp.get_weights()
-
-    # Hitung nilai bobot alternatif dengan Fuzzy AHP
-    ahp.calculate_alternative_weights(alternatives_df, compare)
-    alternative_weights = ahp.get_alternative_weights()
-
-    # Hitung nilai relatif dari setiap alternatif
-    ahp.calculate_relative_weights()
-    relative_weights = ahp.get_relative_weights()
-
-    return criteria_weights, alternative_weights, relative_weights
-
-# Fungsi untuk menampilkan hasil perhitungan
-def display_results(criteria_weights, alternative_weights, relative_weights):
-    st.subheader('Hasil Perhitungan')
-    
-    # Tampilkan nilai bobot kriteria
-    st.write('Nilai Bobot Kriteria:')
-    st.write(criteria_weights.to_string(index=False))
-    
-    # Tampilkan nilai bobot alternatif
-    st.write('Nilai Bobot Alternatif:')
-    st.write(alternative_weights.to_string(index=False))
-    
-    # Tampilkan nilai relatif dari setiap alternatif
-    st.write('Nilai Relatif Alternatif:')
-    st.write(relative_weights.to_string(index=False))
-
-# Buat tampilan aplikasi dengan Streamlit
 def main():
-    st.title('Seleksi Keringanan UKT dengan Fuzzy AHP')
-    st.write('Upload file Excel yang berisi data kriteria dan alternatif untuk menghitung Seleksi Keringanan UKT dengan Fuzzy AHP.')
-    
-    # Tambahkan widget untuk mengupload file excel kriteria
-    criteria_file = st.file_uploader('Upload file Excel Kriteria', type=['xlsx'])
-    
-    # Tambahkan widget untuk mengupload file excel alternatif
-    alternatives_file = st.file_uploader('Upload file Excel Alternatif', type=['xlsx'])
-    
-    if criteria_file is not None and alternatives_file is not None:
-        # Muat data dari file excel kriteria ke dalam dataframe
-        df = pd.read_excel(uploaded_file, sheet_name='Data', header=0, index_col=0)
-        
-        # Tampilkan data kriteria dan alternatif
-        st.subheader('Data Kriteria dan Alternatif')
-        st.write(df.to_string())
+    st.title("Aplikasi FAHP")
 
-        # Tambahkan widget untuk mengatur bobot kriteria
-        criteria_weights = st.sidebar.slider('Bobot Kriteria', 0.0, 1.0, (0.5, 0.5), 0.1)
+    st.sidebar.header("Pilih file data")
+    criteria_file = st.sidebar.file_uploader("Upload file kriteria", type=["xlsx"])
+    alternatives_file = st.sidebar.file_uploader("Upload file alternatif", type=["xlsx"])
+    
+    if criteria_file and alternatives_file:
+        criteriaDict = read_excel_file(criteria_file, 0)
+        alternativesName = read_excel_file(alternatives_file, 0)
 
-        # Hitung Fuzzy AHP dan tampilkan hasil perhitungan
-        if st.button('Hitung'):
-            criteria_weights_df = pd.DataFrame({'Kriteria': df.columns, 'Bobot': criteria_weights})
-            criteria_weights_df = criteria_weights_df[['Kriteria', 'Bobot']]
-            
-            criteria_weights, alternative_weights, relative_weights = calculate_fuzzy_ahp(df, criteria_weights_df)
-            display_results(criteria_weights, alternative_weights, relative_weights)
+        criteria = read_excel_file(criteria_file, 1)
+        for i in range(1, 14):
+            exec(f"altc{i} = read_excel_file(alternatives_file, {i})")
 
-# Jalankan aplikasi
-if __name__ == '__main__':
+        crxcr = np.array(compare(*criteria))
+        for i in range(1, 14):
+            alt = eval(f"altc{i}")
+            cr = compare(*alt)
+            exec(f"altxalt_cr{i} = np.array(cr)")
+
+        st.header("Data Kriteria")
+        st.write(criteriaDict)
+
+        st.header("Data Alternatif")
+        st.write(alternativesName)
+
+        st.header("Matriks Perbandingan Kriteria")
+        st.write(crxcr)
+
+        for i in range(1, 14):
+            st.header(f"Matriks Perbandingan Alternatif-{i}")
+            alt_cr = eval(f"altxalt_cr{i}")
+            st.write(alt_cr)
+
+if __name__ == "__main__":
     main()
