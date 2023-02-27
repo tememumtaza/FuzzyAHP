@@ -5,17 +5,20 @@ Aplikasi ini dibuat untuk membantu proses seleksi keringanan UKT menggunakan met
 ## Instalasi
 
 Untuk menjalankan aplikasi ini, Anda perlu menginstall `streamlit`. Jalankan perintah berikut untuk menginstall `streamlit`:
+```bash
+  pip install streamlit
+```
 
-pip install streamlit
 
 ## Menjalankan Aplikasi
 
 Untuk menjalankan aplikasi ini, gunakan perintah berikut:
+```bash
+  streamlit run FAHP.py
+```
 
-streamlit run FAHP.py
+## Demo Aplikasi
 
-## Live Aplikasi
-
-Anda dapat mengakses aplikasi ini secara langsung di https://fahp-ukt.streamlit.app/.
+Anda dapat mengakses aplikasi ini secara langsung di https://fahp-ukt.streamlit.app.
 
 Terima kasih dan semoga bermanfaat.
