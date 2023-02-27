@@ -1,12 +1,6 @@
-import sys
-sys.path.append('./openpyxl')  # Tambahkan path folder "openpyxl" ke dalam sys.path
-
 #Import library yang dibutuhkan
 import pandas as pd 
 import numpy as np 
-import openpyxl
-import csv
-import math
 import base64
 from io import BytesIO
 import plotly.graph_objects as go
