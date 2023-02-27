@@ -18,14 +18,7 @@ with st.sidebar:
     file_criteria = st.file_uploader("Upload File Nilai Kriteria", type=['xlsx'], key="criteria")
     file_alternatives = st.file_uploader("Upload File Nilai Alternatif", type=['xlsx'], key="alternatives")
 
-
-# Footer
-st.markdown(
-    '<footer style="text-align:center; margin-top:50px;">'
-    '<p>&copy; 2023 <a href="https://github.com/temamumtaza">@temamumtaza</a></p>'
-    '</footer>',
-    unsafe_allow_html=True
-)
+st.sidebar.markdown(" © 2023 Github [@temamumtaza](https://github.com/temamumtaza)")
 
 if file_criteria is not None and file_alternatives is not None:
     criteriaDict = read_excel_file(file_criteria, 0)
