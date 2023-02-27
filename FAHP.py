@@ -12,13 +12,13 @@ st.set_page_config(page_title="FAHP : Seleksi Keringanan UKT", layout="wide",men
 
 st.title("Fuzzy AHP untuk Seleksi Keringanan UKT")
 
+st.sidebar.markdown(" © 2023 Github [@temamumtaza](https://github.com/temamumtaza)")
+
 with st.sidebar:
     st.write("## Upload File \n")
     st.write('Sampel file dapat diakses [disini!](https://github.com/tememumtaza/FuzzyAHP/tree/main/Data%20Sample)\n')
     file_criteria = st.file_uploader("Upload File Nilai Kriteria", type=['xlsx'], key="criteria")
     file_alternatives = st.file_uploader("Upload File Nilai Alternatif", type=['xlsx'], key="alternatives")
-
-st.sidebar.markdown(" © 2023 Github [@temamumtaza](https://github.com/temamumtaza)")
 
 if file_criteria is not None and file_alternatives is not None:
     criteriaDict = read_excel_file(file_criteria, 0)
