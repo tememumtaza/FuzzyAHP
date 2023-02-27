@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Judul Halaman Aplikasi Saya", layout="wide")
 
 #Fungsi untuk membaca file dan menyimpan dalam bentuk array / tuple 
 def read_excel_file(filename, n):
