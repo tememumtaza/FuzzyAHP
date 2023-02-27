@@ -12,6 +12,8 @@ st.set_page_config(page_title="FAHP : Seleksi Keringanan UKT", layout="wide",men
 
 st.title("Fuzzy AHP untuk Seleksi Keringanan UKT")
 
+st.sidebar.markdown(" © 2023 Github [@temamumtaza](https://github.com/temamumtaza)")
+
 with st.sidebar:
     st.write("## Upload File \n")
     st.write('Sampel file dapat diakses [disini!](https://github.com/tememumtaza/FuzzyAHP/tree/main/Data%20Sample)\n')
