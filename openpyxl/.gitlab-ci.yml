@@ -1,0 +1,93 @@
+stages:
+  - test
+
+.unit-test: &unit
+  stage: test
+  image: python:3
+  variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  before_script:
+    - python -V
+    - pip install -r requirements.txt
+    - pip install -e .
+  script:
+    tox --skip-missing-interpreters -- -qqrf
+
+test-optional:
+  <<: *unit
+  script:
+    tox -p auto -e lxml,nolxml,pandas,numpy,nopillow,xfail,defusedxml,keep_vba
+
+test-docs:
+  <<: *unit
+  script:
+    tox -e doc,doctest
+
+test-python36:
+  <<: *unit
+  image: python:3.6
+  variables:
+    TOXENV: py36
+
+test-python37:
+  <<: *unit
+  image: python:3.7
+  variables:
+    TOXENV: py37
+
+test-python38:
+  <<: *unit
+  image: python:3.8
+  variables:
+    TOXENV: py38
+
+test-python39:
+  <<: *unit
+  image: python:3.9
+  variables:
+    TOXENV: py39
+
+test-python310:
+  <<: *unit
+  image: python:3.10
+  variables:
+    TOXENV: py310
+
+test-python311:
+  <<: *unit
+  image: python:3.11
+  variables:
+    TOXENV: py311
+
+test-python312:
+  <<: *unit
+  image: python:3.12-rc
+  variables:
+    TOXENV: py312
+
+
+test-pypy3:
+  <<: *unit
+  image: pypy:3
+  variables:
+    TOXENV: pypy3
+
+test-coverage:
+  <<: *unit
+  script:
+    - export GIT_ID=$(hg tip --template '{node}\n')
+    - export GIT_AUTHOR_NAME=$(hg tip --template '{author|person}\n')
+    - export GIT_AUTHOR_EMAIL=$(hg tip --template '{author|email}\n')
+    - export GIT_COMMITTER_NAME=$(hg tip --template '{author|person}\n')
+    - export GIT_COMMITTER_EMAIL=$(hg tip --template '{author|email}\n')
+    - export GIT_MESSAGE=$(hg tip --template '{desc}\n')
+    - export GIT_BRANCH=$(hg branch)
+    - export GIT_URL=https://foss.heptapod.net/openpyxl/openpyxl
+    - tox -e cov
+  coverage: '/^TOTAL.+?(\d+\%)$/'
+
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml

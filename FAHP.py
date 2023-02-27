@@ -1,3 +1,6 @@
+import sys
+sys.path.append('./openpyxl')  # Tambahkan path folder "openpyxl" ke dalam sys.path
+
 #Import library yang dibutuhkan
 import pandas as pd 
 import numpy as np 
