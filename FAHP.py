@@ -167,7 +167,8 @@ def kelompokkan_score(Score):
 st.title("Fuzzy AHP untuk Seleksi Keringanan UKT")
 
 with st.sidebar:
-    st.write("## Upload File")
+    st.write("## Upload File \n")
+    st.write('## Sampel file dapat diakses [disini!](https://github.com/tememumtaza/FuzzyAHP/tree/main/Data%20Sample).')
     file_criteria = st.file_uploader("Upload File Nilai Kriteria", type=['xlsx'], key="criteria")
     file_alternatives = st.file_uploader("Upload File Nilai Alternatif", type=['xlsx'], key="alternatives")
 
