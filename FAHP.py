@@ -2,6 +2,7 @@
 import pandas as pd 
 import numpy as np 
 import base64
+import xlsxwriter
 from io import BytesIO
 import plotly.graph_objects as go
 import streamlit as st
@@ -249,8 +250,3 @@ if file_criteria is not None and file_alternatives is not None:
 
 else:
     st.write("Mohon upload kedua file terlebih dahulu.")
-
-
-
-
-
