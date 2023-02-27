@@ -243,7 +243,7 @@ if file_criteria is not None and file_alternatives is not None:
 
     # Membuat diagram pie
     fig = go.Figure(data=[go.Pie(labels=labels, values=percentages)])
-    fig.update_layout(title='Presentase Kelompok')
+    fig.update_layout(title='Presentase Kelompok Keringanan')
     st.plotly_chart(fig, use_container_width=True)
 
     st.markdown(filedownload(output), unsafe_allow_html=True)
