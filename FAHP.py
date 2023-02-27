@@ -98,6 +98,7 @@ if file_criteria is not None and file_alternatives is not None:
 else:
     st.write("Mohon upload kedua file terlebih dahulu.")
 
+
 #Fungsi untuk membaca file dan menyimpan dalam bentuk array / tuple 
 def read_excel_file(filename, n):
     df = pd.read_excel(filename)
