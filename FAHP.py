@@ -178,7 +178,7 @@ if file_criteria is not None and file_alternatives is not None:
     alternativesName = read_excel_file(file_alternatives, 0)
 
     criteria = read_excel_file(file_criteria, 1)
-    for i in range(1, len(criteriaDict)):
+    for i in range(1, len(criteriaDict)+1):
         exec(f"altc{i} = read_excel_file(file_alternatives, {i})")
 
     def compare(*items):
@@ -210,7 +210,7 @@ if file_criteria is not None and file_alternatives is not None:
     
     #Membuat array numpy untuk altxalt dengan mengambil nilai dari variabel global
     altxalt = []
-    for i in range(len(criteriaDict)):
+    for i in range(len(criteriaDict)+1):
         key = f"altxalt_cr{i+1}"
         if key in globals():
             altxalt.append(globals()[key])
