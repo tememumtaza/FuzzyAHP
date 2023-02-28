@@ -209,7 +209,7 @@ if file_criteria is not None and file_alternatives is not None:
         exec(f"altxalt_cr{i} = np.array(cr)")
     
     #Membuat array numpy untuk altxalt dengan mengambil nilai dari variabel global
-    altxalt = np.stack([globals()[f"altxalt_cr{i+1}"] for i in range(len(criteriaDict))])
+    altxalt = np.stack([globals()[f"altxalt_cr{i+1}"] for i in range(len(criteriaDict-1))])
 
     # Membuat checkbox untuk menampilkan komputasi lengkap (konsistensi matrix)
     show_comp = st.checkbox("Tampilkan komputasi lengkap")
