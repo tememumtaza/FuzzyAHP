@@ -168,8 +168,8 @@ st.title("Fuzzy AHP untuk Seleksi Keringanan UKT")
 with st.sidebar:
     st.write("## Upload File \n")
     st.write('Sampel file dapat diakses [disini!](https://github.com/tememumtaza/FuzzyAHP/tree/main/Data%20Sample)\n')
-    file_criteria = st.file_uploader("Upload File Kriteria", type=['xlsx'], key="criteria")
-    file_alternatives = st.file_uploader("Upload File Alternatif", type=['xlsx'], key="alternatives")
+    file_criteria = st.file_uploader("Upload File Nilai Kriteria", type=['xlsx'], key="criteria")
+    file_alternatives = st.file_uploader("Upload File Nilai Alternatif", type=['xlsx'], key="alternatives")
 
 st.sidebar.markdown(" © 2023 Github [@temamumtaza](https://github.com/temamumtaza)")
 
@@ -225,10 +225,9 @@ if file_criteria is not None and file_alternatives is not None:
     st.header("Pengelompokan Data Berdasarkan Skor Tertinggi")
 
     # Menambahkan widget untuk memungkinkan pengguna menentukan batas skor untuk masing-masing kelompok
-    batas_keringanan_50 = st.slider('Batas skor Keringanan 50%:', min_value=0.00, max_value=0.01, value=0.0056, step=0.0001, format="%.4f", width=50)
-    batas_keringanan_30 = st.slider('Batas skor Keringanan 30%:', min_value=0.00, max_value=0.01, value=0.0048, step=0.0001, format="%.4f", width=50)
-    batas_keringanan_20 = st.slider('Batas skor Keringanan 20%:', min_value=0.00, max_value=0.01, value=0.0035, step=0.0001, format="%.4f", width=50)
-
+    batas_keringanan_50 = st.slider('Batas skor Keringanan 50%:', min_value=0.00, max_value=0.01, value=0.0056,step=0.0001, format="%.4f")
+    batas_keringanan_30 = st.slider('Batas skor Keringanan 30%:', min_value=0.00, max_value=0.01, value=0.0048,step=0.0001, format="%.4f")
+    batas_keringanan_20 = st.slider('Batas skor Keringanan 20%:', min_value=0.00, max_value=0.01, value=0.0035,step=0.0001, format="%.4f")
 
     # Melakukan pengelompokan dan pengurutan dataframe
     output['kelompok'] = output['Score'].apply(kelompokkan_score)
