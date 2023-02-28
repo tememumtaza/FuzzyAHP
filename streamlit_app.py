@@ -5,7 +5,7 @@ import xlsxwriter
 from io import BytesIO
 import plotly.graph_objects as go
 import streamlit as st
-from fahp import read_excel_file, pairwiseComp, isConsistent, FAHP
+from fahp.py import read_excel_file, pairwiseComp, isConsistent, FAHP
 
 st.set_page_config(page_title="FAHP : Seleksi Keringanan UKT", layout="wide",menu_items=None)
 
