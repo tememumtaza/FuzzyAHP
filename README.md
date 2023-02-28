@@ -14,7 +14,7 @@ Untuk menjalankan aplikasi ini, Anda perlu menginstall `streamlit`. Jalankan per
 
 Untuk menjalankan aplikasi ini, gunakan perintah berikut:
 ```bash
-  streamlit run FAHP.py
+  streamlit run streamlit_app.py
 ```
 
 ## Demo Aplikasi
