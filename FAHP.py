@@ -178,7 +178,7 @@ if file_criteria is not None and file_alternatives is not None:
     alternativesName = read_excel_file(file_alternatives, 0)
 
     criteria = read_excel_file(file_criteria, 1)
-    for i in range(1, 14):
+    for i in range(1, 6):
         exec(f"altc{i} = read_excel_file(file_alternatives, {i})")
 
     def compare(*items):
