@@ -179,7 +179,7 @@ if file_criteria is not None and file_alternatives is not None:
 
     criteria = read_excel_file(file_criteria, 1)
     for i in range(1, len(criteriaDict)):
-        exec(f"altc{i} = read_excel_file('NilaiAlternatif.xlsx', {i})")
+        exec(f"altc{i} = read_excel_file(file_alternatives, {i})")
 
     def compare(*items):
         n = len(items)
