@@ -168,8 +168,8 @@ st.title("Fuzzy AHP untuk Seleksi Keringanan UKT")
 with st.sidebar:
     st.write("## Upload File \n")
     st.write('Sampel file dapat diakses [disini!](https://github.com/tememumtaza/FuzzyAHP/tree/main/Data%20Sample)\n')
-    file_criteria = st.file_uploader("Upload File Nilai Kriteria", type=['xlsx'], key="criteria")
-    file_alternatives = st.file_uploader("Upload File Nilai Alternatif", type=['xlsx'], key="alternatives")
+    file_criteria = st.file_uploader("Upload File Kriteria", type=['xlsx'], key="criteria")
+    file_alternatives = st.file_uploader("Upload File Alternatif", type=['xlsx'], key="alternatives")
 
 st.sidebar.markdown(" © 2023 Github [@temamumtaza](https://github.com/temamumtaza)")
 
