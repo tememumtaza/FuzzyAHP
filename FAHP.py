@@ -178,7 +178,7 @@ if file_criteria is not None and file_alternatives is not None:
     alternativesName = read_excel_file(file_alternatives, 0)
 
     criteria = read_excel_file(file_criteria, 1)
-    for i in range(1, len(criteria)):
+    for i in range(1, len(criteriaDict)):
         exec(f"altc{i} = read_excel_file(file_alternatives, {i})")
 
     def compare(*items):
@@ -203,13 +203,13 @@ if file_criteria is not None and file_alternatives is not None:
         return matrix
     
     crxcr = np.array(compare(*criteria))
-    for i in range(1, len(criteria)):
+    for i in range(1, len(criteriaDict)):
         alt = eval(f"altc{i}")
         cr = compare(*alt)
         exec(f"altxalt_cr{i} = np.array(cr)")
     
     #Membuat array numpy untuk altxalt dengan mengambil nilai dari variabel global
-    altxalt = np.stack([globals()[f"altxalt_cr{i+1}"] for i in range(len(criteria))])
+    altxalt = np.stack([globals()[f"altxalt_cr{i+1}"] for i in range(len(criteriaDict))])
 
     # Membuat checkbox untuk menampilkan komputasi lengkap (konsistensi matrix)
     show_comp = st.checkbox("Tampilkan komputasi lengkap")
