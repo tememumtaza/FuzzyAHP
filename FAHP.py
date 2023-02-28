@@ -203,7 +203,7 @@ if file_criteria is not None and file_alternatives is not None:
         return matrix
     
     crxcr = np.array(compare(*criteria))
-    for i in range(1, len(criteriaDict)):
+    for i in range(1, len(criteriaDict)+1):
         alt = eval(f"altc{i}")
         cr = compare(*alt)
         exec(f"altxalt_cr{i} = np.array(cr)")
