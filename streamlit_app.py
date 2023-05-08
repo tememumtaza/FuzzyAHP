@@ -26,7 +26,18 @@ def filedownload(df, filename='output.xlsx'):
 
 def isConsistent(matrix, printComp=True):
     mat_len = len(matrix)
-
+    RI = {
+        1: 0.00,
+        2: 0.00,
+        3: 0.58,
+        4: 0.90,
+        5: 1.12,
+        6: 1.24,
+        7: 1.32,
+        8: 1.41,
+        9: 1.45,
+        10: 1.49
+    }
     midMatrix = np.array([m[1] for row in matrix for m in row]).reshape(mat_len, mat_len)
     if(printComp): st.write("mid-value matrix: \n", midMatrix, "\n")
     
@@ -36,14 +47,17 @@ def isConsistent(matrix, printComp=True):
     if(printComp): st.write("lambdaMax: ", lambdaMax)
     if(printComp): st.write("\n")
 
-    RIValue = 0.1*(mat_len-1)/mat_len + 0.9
-    if(printComp): st.write("R.I. Value: ", RIValue)
+    if mat_len >= 10:
+        RIValue = RI[10]
+    else:
+        RIValue = (lambdaMax - mat_len)/(mat_len-1)
+    st.write("R.I. Value: ", RIValue)
 
     CIValue = (lambdaMax-mat_len)/(mat_len - 1)
-    if(printComp): st.write("C.I. Value: ", CIValue)
+    st.write("C.I. Value: ", CIValue)
 
     CRValue = CIValue/RIValue
-    if(printComp): st.write("C.R. Value: ", CRValue)
+    st.write("C.R. Value: ", CRValue)
 
     if(printComp): st.write("\n")
     if(CRValue<=0.1):
@@ -100,8 +114,8 @@ def FAHP(crxcr, altxalt, alternativesName, printComp=True):
     
 
     # Cek konsistensi pairwise comparison matrix criteria x criteria
-    crxcr_cons = isConsistent(crxcr, False)
     if(printComp): st.write(f'<p style="font-size:28px">MENGHITUNG KONSISTENSI MATRIKS : \n</p>', unsafe_allow_html=True)
+    crxcr_cons = isConsistent(crxcr, False)
     if(crxcr_cons):
         if(printComp): st.write("criteria X criteria comparison matrix reasonably consistent, we could continue")
     else: 
@@ -154,11 +168,11 @@ def FAHP(crxcr, altxalt, alternativesName, printComp=True):
 
 # Membuat fungsi untuk pengelompokan berdasarkan score dan batas skor yang ditentukan oleh pengguna
 def kelompokkan_score(Score):
-    if Score >= batas_keringanan_50:
+    if Score >= keringanan_50:
         return 'Keringanan 50%'
-    elif Score >= batas_keringanan_30:
+    elif Score >= keringanan_30:
         return 'Keringanan 30%'
-    elif Score >= batas_keringanan_20:
+    elif Score >= keringanan_20:
         return 'Keringanan 20%'
     else:
         return 'Tanpa Keringanan'
@@ -221,14 +235,69 @@ if file_criteria is not None and file_alternatives is not None:
     #Menampilkan rangking alternatif dengan output dari fungsi FAHP
     st.write("\n RANGKING ALTERNATIF:\n", output)
 
-    if st.checkbox('Lakukan Pengelompokan'):
-        # tampilkan widget
+    # Tampilkan widget untuk memilih opsi pengelompokan
+    pengelompokan_option = st.radio("Pilih opsi pengelompokan:", ("Alokasi Persentase", "Batas Skor"))
+
+    # Jika opsi yang dipilih adalah Alokasi Persentase
+    if pengelompokan_option == "Alokasi Persentase":
+        st.header("Pengelompokan Data Berdasarkan Alokasi Persentase")
+        
+        # Tambahkan widget untuk memungkinkan pengguna mengatur kuota pengaju keringanan
+        kuota_pengaju = st.slider('Kuota Pengaju Keringanan:', min_value=0, max_value=len(output), value=len(output)//2, step=1)
+
+        # Tambahkan widget untuk memungkinkan pengguna mengatur alokasi persentase untuk masing-masing kelompok
+        keringanan_50 = st.slider('Alokasi Keringanan 50%:', min_value=0, max_value=100, value=30, step=1)
+        keringanan_30 = st.slider('Alokasi Keringanan 30%:', min_value=0, max_value=100, value=30, step=1)
+        keringanan_20 = st.slider('Alokasi Keringanan 20%:', min_value=0, max_value=100, value=40, step=1)
+
+        # Urutkan data berdasarkan skor secara descending
+        output = output.sort_values(by='Score', ascending=False)
+
+        # Potong data sesuai dengan kuota yang ditentukan oleh pengguna
+        output_kuota = output.iloc[:kuota_pengaju]
+        output_tidak_kuota = output.iloc[kuota_pengaju:]
+
+        # Menghitung jumlah data untuk masing-masing kelompok
+        total = len(output_kuota)
+
+        # Menghitung kuota untuk masing-masing kelompok
+        kuota_50 = int(total * keringanan_50 / 100)
+        kuota_30 = int(total * keringanan_30 / 100)
+        kuota_20 = int(total * keringanan_20 / 100)
+
+        # Melakukan pengelompokan berdasarkan kuota
+        output_kuota.loc[output_kuota.index[:kuota_50], 'kelompok'] = 'Keringanan 50%'
+        output_kuota.loc[output_kuota.index[kuota_50:kuota_50 + kuota_30], 'kelompok'] = 'Keringanan 30%'
+        output_kuota.loc[output_kuota.index[kuota_50 + kuota_30:], 'kelompok'] = 'Keringanan 20%'
+
+        # Tambahkan status "Tidak dapat keringanan" untuk data yang tidak memenuhi kuota
+        output_tidak_kuota['kelompok'] = 'Tidak dapat keringanan'
+
+        # Gabungkan output_kuota dan output_tidak_kuota
+        output_final = pd.concat([output_kuota, output_tidak_kuota])
+
+        # Menampilkan dataframe yang sudah diurutkan dan dikelompokkan
+        st.write(output_final)
+
+        # Menghitung jumlah mahasiswa pada setiap kelompok
+        jumlah_keringanan_50 = len(output_kuota[output_kuota['kelompok'] == 'Keringanan 50%'])
+        jumlah_keringanan_30 = len(output_kuota[output_kuota['kelompok'] == 'Keringanan 30%'])
+        jumlah_keringanan_20 = len(output_kuota[output_kuota['kelompok'] == 'Keringanan 20%'])
+        jumlah_tidak_keringanan = len(output_tidak_kuota)
+
+        # Membuat diagram pie
+        fig = go.Figure(data=[go.Pie(labels=['Keringanan 50%', 'Keringanan 30%', 'Keringanan 20%', 'Tidak dapat keringanan'], values=[jumlah_keringanan_50, jumlah_keringanan_30, jumlah_keringanan_20, jumlah_tidak_keringanan])])
+        fig.update_layout(title='Jumlah Mahasiswa pada Tiap Kelompok Keringanan')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Jika opsi yang dipilih adalah Batas Skor
+    else:
         st.header("Pengelompokan Data Berdasarkan Skor Tertinggi")
     
         # Menambahkan widget untuk memungkinkan pengguna menentukan batas skor untuk masing-masing kelompok
-        batas_keringanan_50 = st.slider('Batas skor Keringanan 50%:', min_value=0.00, max_value=0.01, value=0.0056,step=0.0001, format="%.4f")
-        batas_keringanan_30 = st.slider('Batas skor Keringanan 30%:', min_value=0.00, max_value=0.01, value=0.0048,step=0.0001, format="%.4f")
-        batas_keringanan_20 = st.slider('Batas skor Keringanan 20%:', min_value=0.00, max_value=0.01, value=0.0035,step=0.0001, format="%.4f")
+        keringanan_50 = st.slider('Batas skor Keringanan 50%:', min_value=0.00, max_value=0.01, value=0.0056,step=0.0001, format="%.4f")
+        keringanan_30 = st.slider('Batas skor Keringanan 30%:', min_value=0.00, max_value=0.01, value=0.0048,step=0.0001, format="%.4f")
+        keringanan_20 = st.slider('Batas skor Keringanan 20%:', min_value=0.00, max_value=0.01, value=0.0035,step=0.0001, format="%.4f")
         
         # Melakukan pengelompokan dan pengurutan dataframe
         output['kelompok'] = output['Score'].apply(kelompokkan_score)
@@ -249,7 +318,7 @@ if file_criteria is not None and file_alternatives is not None:
         fig.update_layout(title='Presentase Kelompok Keringanan')
         st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown(filedownload(output), unsafe_allow_html=True)
+    st.markdown(filedownload(output_final), unsafe_allow_html=True)
 
 else:
     st.write("Mohon upload kedua file terlebih dahulu.")
