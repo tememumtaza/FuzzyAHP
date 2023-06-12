@@ -71,7 +71,7 @@ def isConsistent(matrix, printComp=True):
 #Parameter: matrix = Matrix yang akan dihitung konsistensinya, printComp = opsi untuk menampilkan komputasi konsistensi matrix
 def pairwiseComp(matrix, printComp=True):
     matrix_len = len(matrix)
-
+    
     #menghitung fuzzy geometric mean value
     geoMean = np.zeros((matrix_len,3))
 
