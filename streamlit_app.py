@@ -51,14 +51,13 @@ def isConsistent(matrix, printComp=True):
         RIValue = RI[10]
     else:
         RIValue = (lambdaMax - mat_len)/(mat_len-1)
-    
-    if(printComp): st.write("R.I. Value: ", RIValue)
+    st.write("R.I. Value: ", RIValue)
 
     CIValue = (lambdaMax-mat_len)/(mat_len - 1)
-    if(printComp): st.write("C.I. Value: ", CIValue)
+    st.write("C.I. Value: ", CIValue)
 
     CRValue = CIValue/RIValue
-    if(printComp): st.write("C.R. Value: ", CRValue)
+    st.write("C.R. Value: ", CRValue)
 
     if(printComp): st.write("\n")
     if(CRValue<=0.1):
