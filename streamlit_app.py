@@ -243,12 +243,12 @@ if file_criteria is not None and file_alternatives is not None:
         st.header("Pengelompokan Data Berdasarkan Alokasi Persentase")
         
         # Tambahkan widget untuk memungkinkan pengguna mengatur kuota pengaju keringanan
-        kuota_pengaju = st.slider('Kuota Pengaju Keringanan:', min_value=0, max_value=len(output), value=len(output)//2, step=1)
+        kuota_pengaju = st.slider('Kuota Pengaju Keringanan:', min_value=0, max_value=len(output), value=180, step=1)
 
         # Tambahkan widget untuk memungkinkan pengguna mengatur alokasi persentase untuk masing-masing kelompok
-        keringanan_50 = st.slider('Alokasi Keringanan 50%:', min_value=0, max_value=100, value=30, step=1)
+        keringanan_50 = st.slider('Alokasi Keringanan 50%:', min_value=0, max_value=100, value=20, step=1)
         keringanan_30 = st.slider('Alokasi Keringanan 30%:', min_value=0, max_value=100, value=30, step=1)
-        keringanan_20 = st.slider('Alokasi Keringanan 20%:', min_value=0, max_value=100, value=40, step=1)
+        keringanan_20 = st.slider('Alokasi Keringanan 20%:', min_value=0, max_value=100, value=50, step=1)
 
         # Urutkan data berdasarkan skor secara descending
         output = output.sort_values(by='Score', ascending=False)
