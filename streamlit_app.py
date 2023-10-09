@@ -15,14 +15,14 @@ def read_excel_file(filename, n):
     items = np.array(df.iloc[:, 0].tolist()) if n == 0 else tuple(zip(df.iloc[:, 0].tolist(), df.iloc[:, n].tolist()))
     return items
 
-def filedownload(df, filename='output.xlsx'):
-    output = BytesIO()
-    writer = pd.ExcelWriter(output, engine='xlsxwriter') # ubah engine ke xlsxwriter
-    df.to_excel(writer, index=False, sheet_name='Sheet1')
-    writer.save()
-    processed_data = output.getvalue()
-    b64 = base64.b64encode(processed_data)
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}">Download file</a>'
+# def filedownload(df, filename='output.xlsx'):
+#     output = BytesIO()
+#     writer = pd.ExcelWriter(output, engine='xlsxwriter') # ubah engine ke xlsxwriter
+#     df.to_excel(writer, index=False, sheet_name='Sheet1')
+#     writer.save()  # Menggunakan writer.save() untuk menyimpan workbook
+#     processed_data = output.getvalue()
+#     b64 = base64.b64encode(processed_data)
+#     return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}">Download file</a>'
 
 def isConsistent(matrix, printComp=True):
     mat_len = len(matrix)
@@ -318,7 +318,7 @@ if file_criteria is not None and file_alternatives is not None:
         fig.update_layout(title='Presentase Kelompok Keringanan')
         st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown(filedownload(output_final), unsafe_allow_html=True)
+    # st.markdown(filedownload(output_final), unsafe_allow_html=True)
 
 else:
     st.write("Mohon upload kedua file terlebih dahulu.")
